@@ -72,14 +72,14 @@
 </table>
 
 @code {
-    private string SelectedBoat = "Båt 1";
+	private string SelectedBoat = "Båt 1"; //Ändra defaultvärdet till den båt som ska vara förvald?(Vanligaste båten?)
     private DateTime SelectedDate = DateTime.Today;
     private TimeSpan SelectedStartTime = new(12, 0, 0);
     private TimeSpan SelectedEndTime = new(14, 0, 0);
     private string BookedBy = string.Empty;
     private string? ErrorMessage;
 
-    private List<string> Boats = new() { "Båt 1", "Båt 2", "Båt 3" };
+	private List<string> Boats = new() { "Båt 1", "Båt 2", "Båt 3" }; //Ändra Båtnamnen till de riktiga namnen på båtarna(Lägga till fler båtar vid behov och kunna ändra namn)?)
 
     // För <input type="time">
     private string SelectedStartTimeString => SelectedStartTime.ToString(@"hh\:mm");
@@ -96,6 +96,19 @@
         if (TimeSpan.TryParse(e.Value?.ToString(), out var parsed))
             SelectedEndTime = parsed;
     }
+
+	//Lägga till clearing av formulär efter bokning?
+	//Lägga till bekräftelsemeddelande efter bokning?
+	//Lägga till validering för att undvika dubbelbokning?
+	//Lägga till så man kan ta bort bokningar?
+	//Lägga till så man kan redigera bokningar?
+	//Lägga till så listan ränsas efter en vecka efter bokningsdatumet har passerat?
+	//Lägga till så att en admin kan se alla bokningar och ta bort/redigera dem?
+	//Ändra bookedBy till att vara en dropdown med användarnamn istället för att skriva in sitt namn manuellt? (Behöver då lägga till användarhantering) Men för att undvika att folk skriver in fel namn.
+	//Fixa bättre design på sidan?
+	//Fixa så att man kan boka flera dagar i sträck?
+	//Fixa så att utseendet på sidan är bättre på mobil?
+	//Fixa så att utseendet på boka så det ser ut som en kalender som man bokar in direkt in i kalendern?
 
     private void BookBoat()
     {
