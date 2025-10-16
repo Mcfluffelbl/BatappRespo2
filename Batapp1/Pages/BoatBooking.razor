@@ -1,0 +1,110 @@
+﻿@page "/book"
+@inject Batapp1.Service.BookingService BookingService
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Boka en båt</PageTitle>
+
+<h2>Boka en båt</h2>
+
+<div class="p-3">
+    <label>Båt:</label>
+    <select @bind="SelectedBoat" class="form-select">
+        @foreach (var boat in Boats)
+        {
+            <option value="@boat">@boat</option>
+        }
+    </select>
+
+    <br />
+
+    <label>Datum:</label>
+    <InputDate @bind-Value="SelectedDate" class="form-control" />
+
+    <br />
+
+    <label>Tid:</label>
+    <!-- Vanlig HTML-input som alltid fungerar -->
+    <input type="time" value="@SelectedTimeString" @onchange="OnTimeChanged" class="form-control" />
+
+    <br />
+
+    <label>Ditt namn:</label>
+    <InputText @bind-Value="BookedBy" class="form-control" />
+
+    <br />
+
+    <button class="btn btn-primary mt-2" @onclick="BookBoat">Boka</button>
+</div>
+
+@if (ErrorMessage is not null)
+{
+    <p style="color:red">@ErrorMessage</p>
+}
+
+<h3>Aktuella bokningar</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Båt</th>
+            <th>Datum</th>
+            <th>Tid</th>
+            <th>Bokad av</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var booking in BookingService.GetBookings())
+        {
+            <tr>
+                <td>@booking.BoatName</td>
+                <td>@booking.BookingDate.ToShortDateString()</td>
+                <td>@booking.BookingTime</td>
+                <td>@booking.BookedBy</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private string SelectedBoat = "Båt 1";
+    private DateTime SelectedDate = DateTime.Today;
+    private TimeSpan SelectedTime = new(12, 0, 0);
+    private string BookedBy = string.Empty;
+    private string? ErrorMessage;
+
+    private List<string> Boats = new() { "Båt 1", "Båt 2", "Båt 3" };
+
+    // För att visa tiden i <input type="time">
+    private string SelectedTimeString => SelectedTime.ToString(@"hh\:mm");
+
+    private void OnTimeChanged(ChangeEventArgs e)
+    {
+        if (TimeSpan.TryParse(e.Value?.ToString(), out var parsed))
+            SelectedTime = parsed;
+    }
+
+    private void BookBoat()
+    {
+        try
+        {
+            var booking = new Batapp1.Models.BoatBooking
+            {
+                BoatName = SelectedBoat,
+                BookingDate = SelectedDate,
+                BookingTime = SelectedTime,
+                BookedBy = BookedBy
+            };
+
+            BookingService.AddBooking(booking);
+            ErrorMessage = null;
+
+            // Rensa formulär efter bokning
+            BookedBy = string.Empty;
+            SelectedTime = new TimeSpan(12, 0, 0);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+    }
+}
