@@ -22,9 +22,13 @@
 
     <br />
 
-    <label>Tid:</label>
-    <!-- Vanlig HTML-input som alltid fungerar -->
-    <input type="time" value="@SelectedTimeString" @onchange="OnTimeChanged" class="form-control" />
+    <label>Starttid:</label>
+    <input type="time" value="@SelectedStartTimeString" @onchange="OnStartTimeChanged" class="form-control" />
+
+    <br />
+
+    <label>Sluttid:</label>
+    <input type="time" value="@SelectedEndTimeString" @onchange="OnEndTimeChanged" class="form-control" />
 
     <br />
 
@@ -48,7 +52,8 @@
         <tr>
             <th>Båt</th>
             <th>Datum</th>
-            <th>Tid</th>
+            <th>Starttid</th>
+            <th>Sluttid</th>
             <th>Bokad av</th>
         </tr>
     </thead>
@@ -58,7 +63,8 @@
             <tr>
                 <td>@booking.BoatName</td>
                 <td>@booking.BookingDate.ToShortDateString()</td>
-                <td>@booking.BookingTime</td>
+                <td>@booking.StartTime</td>
+                <td>@booking.EndTime</td>
                 <td>@booking.BookedBy</td>
             </tr>
         }
@@ -68,30 +74,45 @@
 @code {
     private string SelectedBoat = "Båt 1";
     private DateTime SelectedDate = DateTime.Today;
-    private TimeSpan SelectedTime = new(12, 0, 0);
+    private TimeSpan SelectedStartTime = new(12, 0, 0);
+    private TimeSpan SelectedEndTime = new(14, 0, 0);
     private string BookedBy = string.Empty;
     private string? ErrorMessage;
 
     private List<string> Boats = new() { "Båt 1", "Båt 2", "Båt 3" };
 
-    // För att visa tiden i <input type="time">
-    private string SelectedTimeString => SelectedTime.ToString(@"hh\:mm");
+    // För <input type="time">
+    private string SelectedStartTimeString => SelectedStartTime.ToString(@"hh\:mm");
+    private string SelectedEndTimeString => SelectedEndTime.ToString(@"hh\:mm");
 
-    private void OnTimeChanged(ChangeEventArgs e)
+    private void OnStartTimeChanged(ChangeEventArgs e)
     {
         if (TimeSpan.TryParse(e.Value?.ToString(), out var parsed))
-            SelectedTime = parsed;
+            SelectedStartTime = parsed;
+    }
+
+    private void OnEndTimeChanged(ChangeEventArgs e)
+    {
+        if (TimeSpan.TryParse(e.Value?.ToString(), out var parsed))
+            SelectedEndTime = parsed;
     }
 
     private void BookBoat()
     {
         try
         {
+            if (SelectedEndTime <= SelectedStartTime)
+            {
+                ErrorMessage = "Sluttiden måste vara senare än starttiden.";
+                return;
+            }
+
             var booking = new Batapp1.Models.BoatBooking
             {
                 BoatName = SelectedBoat,
                 BookingDate = SelectedDate,
-                BookingTime = SelectedTime,
+                StartTime = SelectedStartTime,
+                EndTime = SelectedEndTime,
                 BookedBy = BookedBy
             };
 
@@ -100,7 +121,8 @@
 
             // Rensa formulär efter bokning
             BookedBy = string.Empty;
-            SelectedTime = new TimeSpan(12, 0, 0);
+            SelectedStartTime = new(12, 0, 0);
+            SelectedEndTime = new(14, 0, 0);
         }
         catch (Exception ex)
         {

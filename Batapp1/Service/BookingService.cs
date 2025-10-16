@@ -10,16 +10,17 @@ namespace Batapp1.Service
 
         public void AddBooking(BoatBooking booking)
         {
-            // Kolla så inte båten redan är bokad vid den tiden
-            bool exists = _bookings.Any(b =>
+            // Kolla om tider överlappar
+            bool overlaps = _bookings.Any(b =>
                 b.BoatName == booking.BoatName &&
                 b.BookingDate.Date == booking.BookingDate.Date &&
-                b.BookingTime == booking.BookingTime);
+                booking.StartTime < b.EndTime &&
+                booking.EndTime > b.StartTime);
 
-            if (!exists)
-                _bookings.Add(booking);
-            else
-                throw new Exception("Denna båt är redan bokad vid denna tid!");
+            if (overlaps)
+                throw new Exception("Denna båt är redan bokad under den tiden!");
+
+            _bookings.Add(booking);
         }
     }
 }
