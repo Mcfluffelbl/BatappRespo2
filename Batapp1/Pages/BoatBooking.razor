@@ -17,8 +17,13 @@
 
     <br />
 
-    <label>Datum:</label>
-    <InputDate @bind-Value="SelectedDate" class="form-control" />
+    <label>Startdatum:</label>
+    <InputDate @bind-Value="SelectedStartDate" class="form-control" />
+
+    <br />
+
+    <label>Slutdatum:</label>
+    <InputDate @bind-Value="SelectedEndDate" class="form-control" />
 
     <br />
 
@@ -51,7 +56,8 @@
     <thead>
         <tr>
             <th>Båt</th>
-            <th>Datum</th>
+            <th>Startdatum</th>
+            <th>Slutdatum</th>
             <th>Starttid</th>
             <th>Sluttid</th>
             <th>Bokad av</th>
@@ -62,7 +68,8 @@
         {
             <tr>
                 <td>@booking.BoatName</td>
-                <td>@booking.BookingDate.ToShortDateString()</td>
+                <td>@booking.StartDate.ToShortDateString()</td>
+                <td>@booking.EndDate.ToShortDateString()</td>
                 <td>@booking.StartTime</td>
                 <td>@booking.EndTime</td>
                 <td>@booking.BookedBy</td>
@@ -72,16 +79,16 @@
 </table>
 
 @code {
-	private string SelectedBoat = "Båt 1"; //Ändra defaultvärdet till den båt som ska vara förvald?(Vanligaste båten?)
-    private DateTime SelectedDate = DateTime.Today;
+    private string SelectedBoat = "Båt 1";
+    private DateTime SelectedStartDate = DateTime.Today;
+    private DateTime SelectedEndDate = DateTime.Today;
     private TimeSpan SelectedStartTime = new(12, 0, 0);
     private TimeSpan SelectedEndTime = new(14, 0, 0);
     private string BookedBy = string.Empty;
     private string? ErrorMessage;
 
-	private List<string> Boats = new() { "Båt 1", "Båt 2", "Båt 3" }; //Ändra Båtnamnen till de riktiga namnen på båtarna(Lägga till fler båtar vid behov och kunna ändra namn)?)
+    private List<string> Boats = new() { "Båt 1", "Båt 2", "Båt 3" };
 
-    // För <input type="time">
     private string SelectedStartTimeString => SelectedStartTime.ToString(@"hh\:mm");
     private string SelectedEndTimeString => SelectedEndTime.ToString(@"hh\:mm");
 
@@ -97,33 +104,27 @@
             SelectedEndTime = parsed;
     }
 
-	//Lägga till clearing av formulär efter bokning?
-	//Lägga till bekräftelsemeddelande efter bokning?
-	//Lägga till validering för att undvika dubbelbokning?
-	//Lägga till så man kan ta bort bokningar?
-	//Lägga till så man kan redigera bokningar?
-	//Lägga till så listan ränsas efter en vecka efter bokningsdatumet har passerat?
-	//Lägga till så att en admin kan se alla bokningar och ta bort/redigera dem?
-	//Ändra bookedBy till att vara en dropdown med användarnamn istället för att skriva in sitt namn manuellt? (Behöver då lägga till användarhantering) Men för att undvika att folk skriver in fel namn.
-	//Fixa bättre design på sidan?
-	//Fixa så att man kan boka flera dagar i sträck?
-	//Fixa så att utseendet på sidan är bättre på mobil?
-	//Fixa så att utseendet på boka så det ser ut som en kalender som man bokar in direkt in i kalendern?
-
     private void BookBoat()
     {
         try
         {
-            if (SelectedEndTime <= SelectedStartTime)
+            if (SelectedEndDate < SelectedStartDate)
             {
-                ErrorMessage = "Sluttiden måste vara senare än starttiden.";
+                ErrorMessage = "Slutdatum måste vara samma eller senare än startdatum.";
+                return;
+            }
+
+            if (SelectedStartDate == SelectedEndDate && SelectedEndTime <= SelectedStartTime)
+            {
+                ErrorMessage = "Sluttiden måste vara senare än starttiden om datumen är samma.";
                 return;
             }
 
             var booking = new Batapp1.Models.BoatBooking
             {
                 BoatName = SelectedBoat,
-                BookingDate = SelectedDate,
+                StartDate = SelectedStartDate,
+                EndDate = SelectedEndDate,
                 StartTime = SelectedStartTime,
                 EndTime = SelectedEndTime,
                 BookedBy = BookedBy
@@ -134,8 +135,10 @@
 
             // Rensa formulär efter bokning
             BookedBy = string.Empty;
-            SelectedStartTime = new(12, 0, 0);
-            SelectedEndTime = new(14, 0, 0);
+            SelectedStartDate = DateTime.Today;
+            SelectedEndDate = DateTime.Today;
+            SelectedStartTime = new TimeSpan(12, 0, 0);
+            SelectedEndTime = new TimeSpan(14, 0, 0);
         }
         catch (Exception ex)
         {
